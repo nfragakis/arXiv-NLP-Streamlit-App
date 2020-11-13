@@ -104,6 +104,12 @@ def retrieve_arXiv_embeddings():
 
     return embeddings
 
+def retrieve_model_classes():
+    with open('./data/class_array', 'rb') as f:
+        class_array = pickle.load(f)
+    
+    return class_array
+
 
 def retrieve_arXiv_link(papID):
     """
