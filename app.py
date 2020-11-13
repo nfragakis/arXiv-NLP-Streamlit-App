@@ -1,3 +1,8 @@
+from transformers import DistilBertTokenizer
+from networks.classification import DistillBertClass
+from data.categories import cat_map
+import sentence_transformers
+import json
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -24,8 +29,29 @@ def get_embeddings():
     """
     return retrieve_arXiv_embeddings()
 
-df = get_data(1000000)
+df = get_data(10000)
 embeddings = get_embeddings()
+tokenizer = DistilBertTokenizer.from_pretrained('./models/vocab_distilbert_arxiv.bin')
+classifier = torch.load('./models/pytorch_distilbert_arxiv.bin')
 
 st.header('Enter your question or topic you would like to learn more about')
-st.text_input('What would you like to learn next?')
+user_query = st.text_input('What would you like to learn next?')
+
+if user_query:
+    query_tokens = tokenizer.encode_plus(
+        user_query,
+        add_special_tokens=True,
+        max_length=512,
+        padding='max_length',
+        return_token_type_ids=True)
+    
+    ids = torch.tensor(query_tokens['input_ids']).unsqueeze(0)
+    mask = torch.tensor(query_tokens['attention_mask']).unsqueeze(0)
+
+    pred = model(ids, mask)
+    top_val, top_idx = torch.topk(pred_categories, 3, dim=1)
+    #pred_categories = class_array[top_idx].tolist()
+    #pred_topics = [cat_map[cat] for cat in pred_categories]
+st.text(top_idx)
+
+
