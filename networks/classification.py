@@ -6,9 +6,9 @@ class DistillBertClass(torch.nn.Module):
     Transformer architecture for fine tuning a
     pre-trained DistilBertModel on arXiv data
     """
-    def __init__(self, classes):
+    def __init__(self, classes, pretrained='distilbert-base-uncased'):
         super(DistillBertClass, self).__init__()
-        self.l1 = DistilBertModel.from_pretrained("distilbert-base-uncased");
+        self.l1 = DistilBertModel.from_pretrained(pretrained)
         self.pre_classifier = torch.nn.Linear(768, 768)
         self.dropout = torch.nn.Dropout(0.3)
         self.classifier = torch.nn.Linear(768, classes)
