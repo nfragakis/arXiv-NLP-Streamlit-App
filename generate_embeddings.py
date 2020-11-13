@@ -21,7 +21,7 @@ if __name__ == '__main__':
     df = data_to_df(n)
 
     # Import pre-trained BERT embedding generator
-    model = SentenceTransformer('./data/bert-base-nli-mean-tokens')
+    model = SentenceTransformer('bert-base-nli-mean-tokens')
 
     # Generate embeddings for all abstracts in dataset
     embeddings = model.encode(df['abstract'])
