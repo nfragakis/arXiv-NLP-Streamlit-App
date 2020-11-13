@@ -2,6 +2,7 @@ import torch
 import json
 import pickle
 import pandas as pd
+import numpy as np
 from torch.utils.data import Dataset
 from sklearn.preprocessing import MultiLabelBinarizer
 
@@ -117,5 +118,5 @@ def retrieve_arXiv_link(papID):
     """
     return f'https://arxiv.org/pdf/{papID}'
 
-
-
+def cosine(u, v):
+    return np.dot(u, v) / (np.linalg.norm(u) * np.linalg.norm(v))
