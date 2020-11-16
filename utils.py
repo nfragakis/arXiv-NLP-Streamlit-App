@@ -66,12 +66,12 @@ class Data_Processor(Dataset):
 
     def __getitem__(self, index):
         # get title of paper
-        title = str(self.data.title[index])
-        title = " ".join(title.split())
+        abstract = str(self.data.abstract[index])
+        abstract = " ".join(abstract.split())
 
         # tokenize text w/ pretrained tokenizer
         inputs = self.tokenizer.encode_plus(
-            title,
+            abstract,
             None,
             add_special_tokens=True,
             max_length=self.max_len,
