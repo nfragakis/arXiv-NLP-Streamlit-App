@@ -1,0 +1,7 @@
+streamlit==0.71.0
+torch==1.4.0.dev20191221
+pandas==0.25.3
+numpy==1.18.2
+transformers==3.3.1
+sentence_transformers==0.3.8
+scikit_learn==0.23.2
