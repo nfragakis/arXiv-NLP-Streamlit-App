@@ -52,6 +52,15 @@ def data_to_df(n):
                        'abstract': abstracts,
                        'category': categories})
 
+    df['abstract'] = df['abstract'].apply(lambda x: x.replace("\n", ""))
+    df['abstract'] = df['abstract'].apply(lambda x: x.strip())
+    df['text'] = df['title'] + '. ' + df['abstract']
+
+    df['category'] = df['category'].apply(lambda x: tuple(x.split()))
+    relevant_cats = df['category'].value_counts().reset_index(name="count").query("count > 250")["index"].tolist()
+
+    df = df[df['category'].isin(relevant_cats)]
+
     return df
 
 
