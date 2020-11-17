@@ -19,7 +19,6 @@ def get_data(data_file):
         for line in f:
             yield line
 
-
 def data_to_df(n):
     """
     inputs:
@@ -51,17 +50,28 @@ def data_to_df(n):
                        'title': titles,
                        'abstract': abstracts,
                        'category': categories})
+    return df
+
+def preprocess_data(df):
+    """
+    TODO
+    """
 
     df['abstract'] = df['abstract'].apply(lambda x: x.replace("\n", ""))
     df['abstract'] = df['abstract'].apply(lambda x: x.strip())
     df['text'] = df['title'] + '. ' + df['abstract']
 
     df['category'] = df['category'].apply(lambda x: tuple(x.split()))
-    relevant_cats = df['category'].value_counts().reset_index(name="count").query("count > 250")["index"].tolist()
+    catcount = df['category'].value_counts()
+    relevant_cats = catcount[catcount > 250].index.tolist()
 
     df = df[df['category'].isin(relevant_cats)]
 
-    return df
+    mlb = MultiLabelBinarizer()
+    mlb.fit(df['category'])
+    df['category_encoding'] = df['category'].apply(lambda x: mlb.transform([x])[0])
+
+    return df, mlb.classes_
 
 
 class Data_Processor(Dataset):
