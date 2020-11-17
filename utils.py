@@ -61,7 +61,7 @@ def preprocess_data(df, save_pqt=False):
     df['abstract'] = df['abstract'].apply(lambda x: x.strip())
     df['text'] = df['title'] + '. ' + df['abstract']
 
-    df['category'] = df['category'].apply(lambda x: tuple(x.split()))
+    df['category'] = df['category'].apply(lambda x: x.split())
     catcount = df['category'].value_counts()
     relevant_cats = catcount[catcount > 250].index.tolist()
 
