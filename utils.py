@@ -71,6 +71,8 @@ def preprocess_data(df):
     mlb.fit(df['category'])
     df['category_encoding'] = df['category'].apply(lambda x: mlb.transform([x])[0])
 
+    df = df[['text', 'category', 'category_encoding']]
+
     return df, mlb.classes_
 
 
@@ -100,8 +102,6 @@ class Data_Processor(Dataset):
         )
         ids = inputs['input_ids']
         mask = inputs['attention_mask']
-
-        # Encode Targets
         targets = self.targets[index]
 
         return {
