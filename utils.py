@@ -52,7 +52,7 @@ def data_to_df(n):
                        'category': categories})
     return df
 
-def preprocess_data(df):
+def preprocess_data(df, save_pqt=False):
     """
     TODO
     """
@@ -66,6 +66,9 @@ def preprocess_data(df):
     relevant_cats = catcount[catcount > 250].index.tolist()
 
     df = df[df['category'].isin(relevant_cats)]
+
+    if save_pqt:
+        df.to_parquet('.data/arxiv_processed')
 
     mlb = MultiLabelBinarizer()
     mlb.fit(df['category'])
@@ -82,17 +85,11 @@ class Data_Processor(Dataset):
         self.data = df
         self.tokenizer = tokenizer
         self.max_len = max_len
-        self.mlb = MultiLabelBinarizer()
-        self.targets = self.mlb.fit_transform(df['category'].apply(lambda x: x.split()))
 
     def __getitem__(self, index):
-        # get title of paper
-        abstract = str(self.data.abstract[index])
-        abstract = " ".join(abstract.split())
-
         # tokenize text w/ pretrained tokenizer
         inputs = self.tokenizer.encode_plus(
-            abstract,
+            self.data.text,
             None,
             add_special_tokens=True,
             max_length=self.max_len,
@@ -102,7 +99,7 @@ class Data_Processor(Dataset):
         )
         ids = inputs['input_ids']
         mask = inputs['attention_mask']
-        targets = self.targets[index]
+        targets = self.data.category_encoding[index]
 
         return {
             'ids': torch.tensor(ids, dtype=torch.long),
@@ -112,10 +109,6 @@ class Data_Processor(Dataset):
 
     def __len__(self):
         return self.len
-
-    def classes_(self):
-        "Returns classes from label binarizer"
-        return self.mlb.classes_
 
 
 def retrieve_arXiv_embeddings():
