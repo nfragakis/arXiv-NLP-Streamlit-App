@@ -3,6 +3,7 @@ import json
 import pickle
 import pandas as pd
 import numpy as np
+from data.categories import cat_map
 from torch.utils.data import Dataset
 from sklearn.preprocessing import MultiLabelBinarizer
 
@@ -19,10 +20,12 @@ def get_data(data_file):
         for line in f:
             yield line
 
-def data_to_df(n):
+def data_to_df(pap_categories=[], min_year=2010):
     """
     inputs:
-        n : total files to download
+        cat_map : mapping of all categories found in data dir
+        pap_categories : specify categories to download (default is all)
+        min_year : minimum year of publication
     takes arXiv json file and returns
     pandas df with appropriate columns
     """
@@ -34,22 +37,31 @@ def data_to_df(n):
     abstracts = []
     categories = []
 
-    for _ in range(n):
+    if not pap_categories:
+        pap_categories = list(cat_map.keys())
+
+    for pap in papers:
+        papDict = json.loads(pap)
+        category = papDict.get('categories')
+        
         try:
-            papDict = json.loads(next(papers))
+            try:
+                year = int(papDict.get('journal-ref')[-4:])    # Example Format: "Phys.Rev.D76:013009,2007"
+            except:
+                year = int(papDict.get('journal-ref')[-5:-1])    # Example Format: "Phys.Rev.D76:013009,(2007)"
 
-            ids.append(papDict['id'])
-            titles.append(papDict['title'])
-            abstracts.append(papDict['abstract'])
-            categories.append(papDict['categories'])
-
+            if category in pap_categories and year >= min_year:
+                ids.append(papDict.get('id'))
+                titles.append(papDict.get('title'))
+                abstracts.append(papDict.get('abstract'))
+                categories.append(papDict.get('categories'))
         except:
             pass
 
     df = pd.DataFrame({'id': ids,
                        'title': titles,
                        'abstract': abstracts,
-                       'category': categories})
+                       'categories': categories})
     return df
 
 def preprocess_data(df, save_pqt=False):
@@ -70,21 +82,21 @@ def preprocess_data(df, save_pqt=False):
     df['abstract'] = df['abstract'].apply(lambda x: x.strip())
     df['text'] = df['title'] + '. ' + df['abstract']
 
-    df['category'] = df['category'].apply(lambda x: tuple(x.split()))
-    catcount = df['category'].value_counts()
+    df['categories'] = df['categories'].apply(lambda x: tuple(x.split()))
+    catcount = df['categories'].value_counts()
     relevant_cats = catcount[catcount > 250].index.tolist()
 
-    df = df[df['category'].isin(relevant_cats)].reset_index(drop=True)
+    df = df[df['categories'].isin(relevant_cats)].reset_index(drop=True)
 
     if save_pqt:
-        df['category'] = df['category'].apply(lambda x: list(x))
+        df['categories'] = df['categories'].apply(lambda x: list(x))
         df.to_parquet('./data/arxiv_processed')
 
     mlb = MultiLabelBinarizer()
-    mlb.fit(df['category'])
-    df['category_encoding'] = df['category'].apply(lambda x: mlb.transform([x])[0])
+    mlb.fit(df['categories'])
+    df['category_encoding'] = df['categories'].apply(lambda x: mlb.transform([x])[0])
 
-    df = df[['text', 'category', 'category_encoding']]
+    df = df[['text', 'categories', 'category_encoding']]
 
     return df, mlb.classes_
 
