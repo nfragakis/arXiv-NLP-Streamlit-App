@@ -74,7 +74,7 @@ def preprocess_data(df, save_pqt=False):
     catcount = df['category'].value_counts()
     relevant_cats = catcount[catcount > 250].index.tolist()
 
-    df = df[df['category'].isin(relevant_cats)]
+    df = df[df['category'].isin(relevant_cats)].reset_index(drop=True)
 
     if save_pqt:
         df['category'] = df['category'].apply(lambda x: list(x))
@@ -97,9 +97,11 @@ class Data_Processor(Dataset):
         self.max_len = max_len
 
     def __getitem__(self, index):
+        text = str(self.data.text[index])
+        text = ' '.join(text.split())
         # tokenize text w/ pretrained tokenizer
         inputs = self.tokenizer.encode_plus(
-            self.data.text,
+            text,
             None,
             add_special_tokens=True,
             max_length=self.max_len,
