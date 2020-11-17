@@ -54,21 +54,31 @@ def data_to_df(n):
 
 def preprocess_data(df, save_pqt=False):
     """
-    TODO
+    input: Pandas DF
+
+    - Removes irrelevant characters in abstract
+    - Combines the title and abstract into one text field
+    - Removes categories w/ less than 250 occurences
+    - Option to save .pqt file of text for application
+    - Transforms category field into binary vector using
+        sklearn MultiLabelBinarizer
+
+    output: Processed DF and MultiLabelBinarizer Class Array
     """
 
     df['abstract'] = df['abstract'].apply(lambda x: x.replace("\n", ""))
     df['abstract'] = df['abstract'].apply(lambda x: x.strip())
     df['text'] = df['title'] + '. ' + df['abstract']
 
-    df['category'] = df['category'].apply(lambda x: x.split())
+    df['category'] = df['category'].apply(lambda x: tuple(x.split()))
     catcount = df['category'].value_counts()
     relevant_cats = catcount[catcount > 250].index.tolist()
 
     df = df[df['category'].isin(relevant_cats)]
 
     if save_pqt:
-        df.to_parquet('.data/arxiv_processed')
+        df['category'] = df['category'].apply(lambda x: list(x))
+        df.to_parquet('./data/arxiv_processed')
 
     mlb = MultiLabelBinarizer()
     mlb.fit(df['category'])
