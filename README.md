@@ -1,5 +1,7 @@
 # STEM Paper Discovery App
 
+![app](./App.png)
+
 ### Install
 - [NumPy](http://www.numpy.org/)
 - [Pandas](http://pandas.pydata.org)
@@ -27,7 +29,14 @@ kaggle datasets download -d Cornell-University/arxiv
 unzip arxiv.zip
 ```
 ### Running App
-- From command line navigate to project directory and run below code
+- First make sure the full .json data file is saved in the data directory 
+- Run generate_embeddings.py
+
+```bash
+python generate_embeddings.py --save 'y'
+```
+
+- Then you can run the app with the below code
 
 ```bash
 streamlit run app.py
