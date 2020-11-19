@@ -1,37 +1,35 @@
+from utils import data_to_df, preprocess_data
+from data.categories import cat_map
+import numpy as np
 import argparse
-import pickle
 from sentence_transformers import SentenceTransformer
-from utils import data_to_df
 
 if __name__ == '__main__':
     """
-    Program downloads arXiv data from file, generates n word
-    embeddings and saves dictionary of id, embedding pairs
-    in a serialized pickle file
+    Program downloads arXiv data from file, generates vector
+    embeddings using a pretrained BERT model from SentenceTransformer
+    library, then saves vectors as .npy in data directory
     """
-
-    # Take command line arguments for number of embedding to generate
     parser = argparse.ArgumentParser()
-    parser.add_argument('--n', type=int, default=1000)
+    parser.add_argument('--save', type=str, default='n')
     args = parser.parse_args()
 
-    n = args.n
+    # Store cmd line arg
+    save = args.save
+    save_pqt = True if save == 'y' else False
 
     # Download arXiv data in pandas dataframe
-    df = data_to_df(n)
+    df = data_to_df(cat_map, min_year=2010)
+    df, _ = preprocess_data(df, save_pqt)
 
     # Import pre-trained BERT embedding generator
-    model = SentenceTransformer('bert-base-nli-mean-tokens')
+    model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
 
-    # Generate embeddings for all abstracts in dataset
-    embeddings = model.encode(df['abstract'])
+    # Generate embeddings for all text in dataset
+    embeddings = model.encode(df['text'])
 
-    # Save embeddings in dictionary w/ id as key
-    embedDict = dict(zip(df['id'], embeddings))
-
-    outfile = open('./data/embeddings', 'wb')
-    pickle.dump(embedDict, outfile)
-    outfile.close()
+    # Save np array as .npy
+    np.save('.data/embeddings.npy', embeddings)
 
     # Save model for future decoding
-    model.save('./models/bert-base-nli-mean-tokens')
+    model.save('./models/distilbert-base-nli-stsb-mean-tokens')
