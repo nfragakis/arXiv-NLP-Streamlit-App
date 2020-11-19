@@ -7,6 +7,7 @@
 - [Streamlit](https://docs.streamlit.io/en/stable/)
 - [Torch](https://pytorch.org/docs/stable/index.html)
 - [Sentence_Transformers](https://www.sbert.net/)
+- [SimpleTransformers](https://github.com/ThilinaRajapakse/simpletransformers)
 - [scikit-learn](http://scikit-learn.org/stable/)
 
 Run this command from shell to install all libraries
